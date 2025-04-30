@@ -2,7 +2,7 @@
 
 Este guia mostra a forma mais rápida de executar o script, instalando tudo diretamente no seu Python principal.
 
-https://youtu.be/2bG9xP9N4K4
+https://youtu.be/sPlQGT31N4Q
 
 ## **Pré-requisitos:**
 
