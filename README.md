@@ -147,7 +147,7 @@ O Docker Desktop precisa de virtualização. O WSL 2 é o método recomendado.
 3.  O script já está configurado para usar o endereço `http://127.0.0.1:5000`, então ele deve se conectar automaticamente ao contêiner Docker que você acabou de iniciar.
 4.  Selecione os idiomas de origem e destino desejados (que você incluiu no comando `docker run`) e inicie a captura. As traduções agora usarão seu servidor local!
 
-**Passo 5: Parar o Servidor LibreTranslate (Quando Terminar)**
+**OPICIONAL - Passo 5: Parar o Servidor LibreTranslate (Quando Terminar)**
 
 1. Quando não precisar mais do servidor de tradução, volte ao seu terminal.
 
