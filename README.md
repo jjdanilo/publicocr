@@ -2,6 +2,8 @@
 
 Este guia mostra a forma mais rápida de executar o script, instalando tudo diretamente no seu Python principal.
 
+https://youtu.be/2bG9xP9N4K4
+
 ## **Pré-requisitos:**
 
 *   Instalar Python 3.12 com opção "add to path" marcada.
