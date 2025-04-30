@@ -83,7 +83,7 @@ SUPPORTED_LANGUAGES = {
     "Português (Brasil)": {
         "internal": "pt-br",
         "ocr": "pt",       # PaddleOCR pode usar 'pt' (verificar modelo) ou talvez precise de um modelo específico
-        "deepl": "PT-BR",
+        "deepl": "pt-br",
         "google": "pt",
         "libre": "pt-br"
     },
@@ -478,6 +478,43 @@ class Worker(QObject):
             return original_ocr_text, f"[Erro API Libre: {type(req_err).__name__}]", request_id
 
     def _translate_deepl(self, text_to_translate, request_id, original_ocr_text):
+        if not self.deepl_translator: return original_ocr_text, "[Erro Interno: Cliente DeepL não inicializado]", request_id
+        # Usa os códigos internos para buscar os códigos específicos do DeepL
+        source_lang_code = get_lang_code(self.ocr_lang_internal, DEEPL)
+        target_lang_code = get_lang_code(self.target_lang_internal, DEEPL)
+        start_time = time.time()
+        try:
+            # DeepL pode detectar source, mas especificar pode ser mais robusto
+            # A função translate_text retorna um objeto TextResult (ou lista deles,
+            # mas aqui esperamos um único objeto pois a entrada é uma string única)
+            result = self.deepl_translator.translate_text(
+                text_to_translate,
+                source_lang=source_lang_code, # Pode ser None se quiser autodetectar
+                target_lang=target_lang_code
+            )
+            duration = time.time() - start_time
+            translated_text = result.text.strip()
+
+            # ----- CORREÇÃO APLICADA AQUI -----
+            # O atributo correto é detected_source_lang
+            detected_source = result.detected_source_lang
+            # -----------------------------------
+
+            print(f"[DeepL ID:{request_id}] {source_lang_code or 'auto'}({detected_source})->{target_lang_code}, Tempo: {duration:.3f}s, Chars: {len(text_to_translate)}")
+            return original_ocr_text, translated_text or "[API Retornou Vazio]", request_id
+        except deepl.AuthorizationException as auth_err: return original_ocr_text, f"[Erro API DeepL: Chave Inválida]", request_id
+        except deepl.QuotaExceededException: return original_ocr_text, f"[Erro API DeepL: Cota Excedida]", request_id
+        except deepl.DeepLException as dl_err:
+             # Verifica erro de idioma
+             if "target_lang" in str(dl_err) or "source_lang" in str(dl_err) or "value is not supported" in str(dl_err):
+                 return original_ocr_text, f"[Erro API DeepL: Idioma não suportado ({source_lang_code}/{target_lang_code})]", request_id
+             print(f"[DeepL ID:{request_id}] Erro DeepL: {dl_err}")
+             traceback.print_exc() # Adicionado para mais detalhes no console em outros erros DeepL
+             return original_ocr_text, f"[Erro API DeepL: {dl_err}]", request_id
+        except Exception as e:
+            print(f"[DeepL ID:{request_id}] Erro inesperado: {e}")
+            traceback.print_exc() # Adicionado para mais detalhes no console
+            return original_ocr_text, f"[Erro DeepL Inesperado: {type(e).__name__}]", request_id
         if not self.deepl_translator: return original_ocr_text, "[Erro Interno: Cliente DeepL não inicializado]", request_id
         # Usa os códigos internos para buscar os códigos específicos do DeepL
         source_lang_code = get_lang_code(self.ocr_lang_internal, DEEPL)
